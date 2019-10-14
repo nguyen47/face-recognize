@@ -1,4 +1,5 @@
 (async () => {
+  // Load model
   await faceapi.nets.ssdMobilenetv1.loadFromUri("/models");
   await faceapi.nets.faceRecognitionNet.loadFromUri("/models");
   await faceapi.nets.faceLandmark68Net.loadFromUri("/models");
@@ -10,24 +11,24 @@
     .withFaceLandmarks()
     .withFaceDescriptor();
   const displaySize = { width: input.width, height: input.height };
+  // resize the overlay canvas to the input dimensions
   const canvas = document.getElementById("myCanvas");
   faceapi.matchDimensions(canvas, displaySize);
   const resizedDetections = faceapi.resizeResults(result, displaySize);
   console.log(resizedDetections);
 
   // Recognize Face
-  const labeledFaceDescriptors = await detectAllFaces();
+  const labeledFaceDescriptors = await detectAllLabeledFaces();
   const faceMatcher = new faceapi.FaceMatcher(labeledFaceDescriptors, 0.7);
   if (result) {
     const bestMatch = faceMatcher.findBestMatch(result.descriptor);
-    console.log(bestMatch);
     const box = resizedDetections.detection.box;
     const drawBox = new faceapi.draw.DrawBox(box, { label: bestMatch.label });
     drawBox.draw(canvas);
   }
 })();
 
-async function detectAllFaces() {
+async function detectAllLabeledFaces() {
   const labels = ["Nancy", "Yeonwoo"];
   return Promise.all(
     labels.map(async label => {
